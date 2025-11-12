@@ -4,7 +4,7 @@ Dataset processor for multi-process conversion.
 import os
 from multiprocessing import Pool
 from tqdm import tqdm
-from datasets import Dataset
+from datasets import Dataset, load_from_disk
 from typing import List, Dict, Tuple
 from src.converter import HierarchicalConverter
 from config import settings
@@ -75,49 +75,85 @@ class DatasetProcessor:
             dataset = dataset.select(range(min(settings.TEST_SIZE, len(dataset))))
             print(f"\n🧪 TEST MODE: Processing only {len(dataset)} examples")
         
+        # Check for existing checkpoint and resume
+        checkpoint_path = output_path + ".checkpoint"
+        start_idx = 0
+        existing_results = []
+        
+        if settings.RESUME_FROM_CHECKPOINT and os.path.exists(checkpoint_path):
+            try:
+                checkpoint_ds = load_from_disk(checkpoint_path)
+                if '_conversion_success' in checkpoint_ds.features:
+                    start_idx = len(checkpoint_ds)
+                    # Convert checkpoint back to results format
+                    existing_results = [{
+                        'Description': ex['Description'],
+                        'Doctor': ex['Doctor'],
+                        'Patient': ex['Patient'],
+                        'Status': ex['Status'],
+                        '_original_doctor': ex['_original_doctor'],
+                        '_conversion_success': ex['_conversion_success']
+                    } for ex in checkpoint_ds]
+                    print(f"\n📂 Resuming from checkpoint: {start_idx}/{len(dataset)} already processed")
+                    print(f"   Success rate so far: {sum(r['_conversion_success'] for r in existing_results)/len(existing_results)*100:.1f}%")
+            except Exception as e:
+                print(f"\n⚠ Could not load checkpoint: {e}")
+                print("   Starting from beginning...")
+        
+        if start_idx >= len(dataset):
+            print("\n✓ Dataset already fully processed!")
+            return load_from_disk(checkpoint_path)
+        
         total_examples = len(dataset)
+        remaining = total_examples - start_idx
+        
         print(f"\n{'='*60}")
         print(f"Processing {total_examples} examples with {self.max_workers} workers")
+        if start_idx > 0:
+            print(f"Resuming from index {start_idx} ({remaining} remaining)")
         print(f"{'='*60}\n")
         
-        # Prepare arguments for multiprocessing
-        args_list = [(idx, example) for idx, example in enumerate(dataset)]
+        # Prepare arguments for multiprocessing (only unprocessed samples)
+        args_list = [(idx, example) for idx, example in enumerate(dataset) if idx >= start_idx]
         
         # Process with multiprocessing
         results = []
         
         with Pool(processes=self.max_workers) as pool:
-            with tqdm(total=total_examples, desc="Converting", ncols=80) as pbar:
+            # Set initial progress from checkpoint
+            with tqdm(total=remaining, desc="Converting", ncols=80, initial=0) as pbar:
                 for idx, result in pool.imap_unordered(process_single_example, args_list):
                     results.append((idx, result))  # Store idx with result
                     pbar.update(1)
                     
-                    # Update progress stats
-                    success_count = sum(r[1]['_conversion_success'] for r in results)
-                    success_rate = success_count / len(results) * 100
+                    # Combine with existing results for stats
+                    all_results_so_far = existing_results + [r[1] for r in results]
+                    success_count = sum(r['_conversion_success'] for r in all_results_so_far)
+                    success_rate = success_count / len(all_results_so_far) * 100
                     pbar.set_postfix({
                         'success': f'{success_rate:.1f}%'
                     })
                     
-                    # Save checkpoint
-                    if len(results) % settings.SAVE_INTERVAL == 0:
-                        # Extract just the result dicts for checkpoint
-                        checkpoint_results = [r[1] for r in results]
-                        self._save_checkpoint(checkpoint_results, output_path)
+                    # Save checkpoint (combine with existing)
+                    if len(all_results_so_far) % settings.SAVE_INTERVAL == 0:
+                        self._save_checkpoint(all_results_so_far, output_path)
         
-        # Sort results by index to maintain original order
+        # Sort new results by index
         results.sort(key=lambda x: x[0])
         # Extract just the result dicts
-        results = [r[1] for r in results]
+        new_results = [r[1] for r in results]
         
-        # Create HuggingFace dataset (keep only successful conversions)
-        processed_dataset = self._create_dataset(results)
+        # Combine with existing results
+        all_results = existing_results + new_results
+        
+        # Create HuggingFace dataset
+        processed_dataset = self._create_dataset(all_results)
         
         # Save final dataset
         self._save_dataset(processed_dataset, output_path)
         
         # Print statistics
-        self._print_statistics(results, total_examples, output_path)
+        self._print_statistics(all_results, total_examples, output_path)
         
         return processed_dataset
     

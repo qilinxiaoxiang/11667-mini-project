@@ -19,12 +19,13 @@ RAW_DATA_DIR = os.path.join(DATA_DIR, "raw")
 PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")
 
 # Processing Configuration
-MAX_WORKERS = 4  # Conservative concurrent requests to DeepSeek API
+MAX_WORKERS = 10  # Concurrent API requests (DeepSeek has no rate limit)
 TEST_MODE = False  # Set to True to process only a subset
 TEST_SIZE = 16  # Number of samples to process in test mode
 SAVE_INTERVAL = 10  # Save progress every N samples
 MAX_RETRIES = 3  # Retry failed API calls
 TIMEOUT = 60  # API call timeout in seconds (DeepSeek has no rate limit but use reasonable timeout)
+RESUME_FROM_CHECKPOINT = True  # Resume from checkpoint if available
 
 # Prompt Configuration
 SYSTEM_PROMPT = """You are a helpful assistant that provides concise and accurate medical information. 
