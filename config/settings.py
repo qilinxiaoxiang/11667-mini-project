@@ -20,7 +20,7 @@ PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")
 
 # Processing Configuration
 MAX_WORKERS = 4  # Conservative concurrent requests to DeepSeek API
-TEST_MODE = True  # Set to True to process only a subset
+TEST_MODE = False  # Set to True to process only a subset
 TEST_SIZE = 16  # Number of samples to process in test mode
 SAVE_INTERVAL = 10  # Save progress every N samples
 MAX_RETRIES = 3  # Retry failed API calls
