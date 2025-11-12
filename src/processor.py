@@ -25,18 +25,18 @@ def process_single_example(args: Tuple[int, Dict]) -> Tuple[int, Dict]:
     # Create converter in worker process
     converter = HierarchicalConverter()
     
-    # Get original doctor response
-    original_doctor = example.get('Doctor')
+    # Get original doctor response (use [] instead of .get() for HuggingFace datasets)
+    original_doctor = example['Doctor']
     
     # Convert to hierarchical format
     hierarchical_doctor = converter.convert(original_doctor)
     
     # Prepare processed example (keep same structure as original)
     processed = {
-        'Description': example.get('Description'),
+        'Description': example['Description'],
         'Doctor': hierarchical_doctor if hierarchical_doctor else original_doctor,  # Use original if conversion fails
-        'Patient': example.get('Patient'),
-        'Status': example.get('Status'),
+        'Patient': example['Patient'],
+        'Status': example['Status'],
         '_original_doctor': original_doctor,  # Keep original for comparison
         '_conversion_success': hierarchical_doctor is not None
     }
