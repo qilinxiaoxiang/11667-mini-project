@@ -1,5 +1,5 @@
 """
-Configuration file for the hierarchical medical response generation project.
+Configuration settings for the hierarchical medical response generation project.
 """
 import os
 
@@ -12,15 +12,19 @@ DEEPSEEK_MODEL = "deepseek-chat"
 DATASET_NAME = "mahfoos/Patient-Doctor-Conversation"
 DATASET_SPLIT = "train"
 
-# Output Configuration
-OUTPUT_DIR = "./data/processed"
-OUTPUT_FILENAME = "hierarchical_medical_conversations.json"
+# Directory Configuration
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+RAW_DATA_DIR = os.path.join(DATA_DIR, "raw")
+PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")
 
 # Processing Configuration
-MAX_WORKERS = 8  # Number of parallel processes
-BATCH_SIZE = 100  # Save progress every N samples
+MAX_WORKERS = 4  # Conservative concurrent requests to DeepSeek API
+TEST_MODE = True  # Set to True to process only a subset
+TEST_SIZE = 16  # Number of samples to process in test mode
+SAVE_INTERVAL = 10  # Save progress every N samples
 MAX_RETRIES = 3  # Retry failed API calls
-TIMEOUT = 30  # API call timeout in seconds
+TIMEOUT = 60  # API call timeout in seconds (DeepSeek has no rate limit but use reasonable timeout)
 
 # Prompt Configuration
 SYSTEM_PROMPT = """You are a helpful assistant that provides concise and accurate medical information. 

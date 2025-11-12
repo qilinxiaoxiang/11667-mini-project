@@ -28,6 +28,7 @@ Thumbs.db
 # Project specific
 *.pdf
 data/raw/
+data/processed/
 data/cache/
 *.log
 .env

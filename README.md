@@ -53,49 +53,83 @@ source ~/.zshrc
 mini_project/
 ├── README.md                    # Project documentation
 ├── requirements.txt             # Python dependencies
-├── config.py                    # Configuration file
-├── convert_dataset.py           # Multi-process dataset conversion
-├── main.py                      # Original test script
-└── data/
+├── main.py                      # Original test script (legacy)
+├── config/                      # Configuration files
+│   ├── __init__.py
+│   └── settings.py              # All configuration settings
+├── src/                         # Source code
+│   ├── __init__.py
+│   ├── data_loader.py           # Dataset loading and caching
+│   ├── converter.py             # API client for hierarchical conversion
+│   ├── processor.py             # Multi-process batch processor
+│   └── utils/                   # Utility functions
+│       └── __init__.py
+├── scripts/                     # Executable scripts
+│   ├── download_dataset.py      # Download and cache dataset
+│   └── convert_dataset.py       # Convert dataset to hierarchical format
+└── data/                        # Data directory
+    ├── raw/                     # Downloaded raw dataset (cached)
     └── processed/               # Converted hierarchical datasets
-        ├── hierarchical_medical_conversations.json
-        └── hf_dataset/          # HuggingFace format for fine-tuning
+        └── hierarchical_dataset/  # HuggingFace format for fine-tuning
 ```
 
-## 🔄 Dataset Conversion
+## 🔄 Dataset Workflow
 
-Convert the original doctor responses to hierarchical format using DeepSeek API:
+### Step 1: Download Dataset (Optional)
+
+Download and cache the dataset without processing:
 
 ```bash
-python convert_dataset.py
+python scripts/download_dataset.py
+```
+
+### Step 2: Convert to Hierarchical Format
+
+Convert doctor responses to hierarchical structure:
+
+```bash
+# Test mode: Process only 16 examples
+python scripts/convert_dataset.py
+
+# Full dataset: Edit config/settings.py and set TEST_MODE = False
+python scripts/convert_dataset.py
 ```
 
 ### Features
-- **Multi-process Parallel Processing**: Utilizes multiple CPU cores for faster conversion
-- **Automatic Checkpointing**: Saves progress every 100 samples (configurable)
+- **Multi-process Parallel Processing**: Concurrent API calls (4 workers by default)
+- **Automatic Checkpointing**: Saves progress every 10 samples (configurable)
 - **Retry Logic**: Handles API failures with exponential backoff
 - **Progress Tracking**: Real-time progress bar with success rate statistics
-- **Dual Format Output**: Saves both JSON and HuggingFace dataset formats
+- **Format Preservation**: Maintains original HuggingFace dataset structure
 
 ### Configuration
-Adjust settings in `config.py`:
-- `MAX_WORKERS`: Number of parallel processes (default: 8)
-- `BATCH_SIZE`: Checkpoint frequency (default: 100)
-- `MAX_RETRIES`: API retry attempts (default: 3)
-- `TIMEOUT`: API call timeout in seconds (default: 30)
+
+Adjust settings in `config/settings.py`:
+
+```python
+# Processing Configuration
+MAX_WORKERS = 4      # Number of parallel API requests
+TEST_MODE = True     # Set to False for full dataset
+TEST_SIZE = 16       # Number of examples in test mode
+SAVE_INTERVAL = 10   # Save checkpoint every N samples
+MAX_RETRIES = 3      # Retry failed API calls
+TIMEOUT = 60         # API call timeout in seconds
+```
 
 ### Output Format
-```json
+
+The processed dataset maintains the same structure as the original:
+
+```python
 {
-  "index": 0,
   "Description": "what does abutment of the nerve root mean",
   "Patient": "hi doctor I am just wondering...",
-  "Doctor_Original": "hi I have gone through your query...",
-  "Doctor_Hierarchical": "- Assessment\n  - Query Understanding\n    - ...",
-  "Status": "medium severity",
-  "conversion_success": true
+  "Doctor": "- Assessment\n  - Query Understanding\n    - ...",  # Hierarchical format
+  "Status": "medium severity"
 }
 ```
+
+Note: Failed conversions fall back to original doctor responses.
 
 ## 📊 Hierarchical Structure Criteria
 
@@ -124,14 +158,20 @@ Example:
 
 ### 1. Data Preparation
 ```bash
-# Convert dataset to hierarchical format
-python convert_dataset.py
+# Download dataset
+python scripts/download_dataset.py
+
+# Test conversion (16 examples)
+python scripts/convert_dataset.py
+
+# Full conversion: Set TEST_MODE = False in config/settings.py
+python scripts/convert_dataset.py
 ```
 
 ### 2. Model Fine-tuning
 (To be implemented)
 - Load base models (Qwen2.5-0.5B, DeepSeek-R1 1.5B)
-- Fine-tune on hierarchical dataset
+- Fine-tune on hierarchical dataset from `data/processed/hierarchical_dataset/`
 - Evaluate structure quality and medical accuracy
 
 ### 3. Evaluation
@@ -149,20 +189,22 @@ python convert_dataset.py
 ## 🔧 Technical Details
 
 ### API Integration
-- Uses DeepSeek API for initial hierarchical conversion
+- Uses DeepSeek API for hierarchical conversion
 - OpenAI-compatible SDK interface
-- Robust error handling and rate limiting
+- No rate limiting (per [DeepSeek API docs](https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit))
+- Conservative concurrent requests (4 workers) for stability
 
 ### Multiprocessing Strategy
-- Process-level parallelism for API calls
+- Process-level parallelism for concurrent API calls
 - Independent worker processes to avoid GIL limitations
-- Shared progress tracking and checkpoint coordination
+- Automatic progress tracking and checkpoint coordination
 
 ### Data Pipeline
-1. Load raw dataset from HuggingFace
-2. Parallel API conversion with retry logic
-3. Save checkpoints incrementally
-4. Export in multiple formats (JSON, HuggingFace Dataset)
+1. Download and cache dataset from HuggingFace
+2. Parallel API conversion with retry logic and exponential backoff
+3. Save checkpoints every 10 samples
+4. Export in HuggingFace Dataset format (preserves original structure)
+5. Failed conversions fall back to original responses
 
 ## 📝 Notes
 
