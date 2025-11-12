@@ -123,12 +123,14 @@ class DatasetProcessor:
     
     def _create_dataset(self, results: List[Dict]) -> Dataset:
         """Create HuggingFace dataset from results."""
-        # Keep original structure: Description, Doctor, Patient, Status
+        # Keep original structure + metadata for tracking
         data = {
             'Description': [r['Description'] for r in results],
             'Doctor': [r['Doctor'] for r in results],
             'Patient': [r['Patient'] for r in results],
             'Status': [r['Status'] for r in results],
+            '_original_doctor': [r['_original_doctor'] for r in results],
+            '_conversion_success': [r['_conversion_success'] for r in results],
         }
         return Dataset.from_dict(data)
     
@@ -148,12 +150,23 @@ class DatasetProcessor:
         success_count = sum(r['_conversion_success'] for r in results)
         fail_count = total - success_count
         
+        # Get failed indices
+        failed_indices = [i for i, r in enumerate(results) if not r['_conversion_success']]
+        
         print(f"\n{'='*60}")
         print(f"✓ Conversion Complete!")
         print(f"{'='*60}")
         print(f"Total processed:      {total}")
         print(f"Successful:           {success_count} ({success_count/total*100:.2f}%)")
         print(f"Failed (kept orig):   {fail_count} ({fail_count/total*100:.2f}%)")
-        print(f"Output saved to:      {output_path}")
+        
+        if failed_indices:
+            print(f"\nFailed sample indices (first 50):")
+            print(f"  {failed_indices[:50]}")
+            if len(failed_indices) > 50:
+                print(f"  ... and {len(failed_indices) - 50} more")
+        
+        print(f"\nOutput saved to:      {output_path}")
+        print(f"Metadata fields preserved: _conversion_success, _original_doctor")
         print(f"{'='*60}\n")
 
