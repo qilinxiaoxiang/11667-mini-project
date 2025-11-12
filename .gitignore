@@ -33,6 +33,11 @@ data/cache/
 *.log
 .env
 
+# Runtime files
+conversion.pid
+conversion.log
+*.checkpoint/
+
 # Model files
 models/
 checkpoints/
