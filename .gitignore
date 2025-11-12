@@ -28,10 +28,13 @@ Thumbs.db
 # Project specific
 *.pdf
 data/raw/
-data/processed/
+data/processed/*.checkpoint/
 data/cache/
 *.log
 .env
+
+# Keep processed dataset for training
+!data/processed/hierarchical_dataset_clean/
 
 # Runtime files
 conversion.pid
