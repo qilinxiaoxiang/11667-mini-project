@@ -2,6 +2,7 @@
 """
 Script to reprocess the 81 failed samples with the bug fix.
 Only processes samples that failed in the previous run.
+Uses multiprocessing for parallel execution.
 """
 import sys
 import os
@@ -12,7 +13,37 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from datasets import load_from_disk, load_dataset, Dataset
 from src.converter import HierarchicalConverter
 from tqdm import tqdm
+from multiprocessing import Pool
+from typing import Tuple, Dict
 from config import settings
+
+
+def reprocess_single_sample(args: Tuple[int, Dict, str]) -> Tuple[int, Dict]:
+    """
+    Reprocess a single failed sample.
+    
+    Args:
+        args: Tuple of (index, original_example, original_doctor_text)
+        
+    Returns:
+        Tuple of (index, updated_data)
+    """
+    idx, original_example, original_doctor_text = args
+    
+    # Create converter in worker process
+    converter = HierarchicalConverter()
+    
+    # Convert
+    hierarchical_doctor = converter.convert(original_doctor_text)
+    
+    # Return updated data
+    updated = {
+        'hierarchical_doctor': hierarchical_doctor,
+        'original_doctor': original_doctor_text,
+        'success': hierarchical_doctor is not None
+    }
+    
+    return idx, updated
 
 
 def reprocess_failed_samples():
@@ -44,9 +75,6 @@ def reprocess_failed_samples():
         print("✓ No failed samples to reprocess!")
         return
     
-    # Initialize converter
-    converter = HierarchicalConverter()
-    
     # Convert current dataset to list for modification
     data_list = [{
         'Description': ex['Description'],
@@ -57,26 +85,33 @@ def reprocess_failed_samples():
         '_conversion_success': ex['_conversion_success']
     } for ex in current_ds]
     
-    # Reprocess failed samples
+    # Prepare arguments for multiprocessing
+    args_list = [
+        (idx, original_ds[idx], original_ds[idx]['Doctor'])
+        for idx in failed_indices
+    ]
+    
+    print(f"Using {settings.MAX_WORKERS} workers for parallel reprocessing...\n")
+    
+    # Reprocess with multiprocessing
     success_count = 0
-    for idx in tqdm(failed_indices, desc="Reprocessing"):
-        # Get original text from source dataset (using [] notation)
-        original_doctor = original_ds[idx]['Doctor']
-        
-        # Convert
-        hierarchical_doctor = converter.convert(original_doctor)
-        
-        # Update in list
-        if hierarchical_doctor:
-            data_list[idx]['Doctor'] = hierarchical_doctor
-            data_list[idx]['_original_doctor'] = original_doctor
-            data_list[idx]['_conversion_success'] = True
-            success_count += 1
-        else:
-            # Keep original if still fails
-            data_list[idx]['Doctor'] = original_doctor if original_doctor else None
-            data_list[idx]['_original_doctor'] = original_doctor
-            data_list[idx]['_conversion_success'] = False
+    with Pool(processes=settings.MAX_WORKERS) as pool:
+        with tqdm(total=len(failed_indices), desc="Reprocessing", ncols=80) as pbar:
+            for idx, updated in pool.imap_unordered(reprocess_single_sample, args_list):
+                # Update in list
+                if updated['success']:
+                    data_list[idx]['Doctor'] = updated['hierarchical_doctor']
+                    data_list[idx]['_original_doctor'] = updated['original_doctor']
+                    data_list[idx]['_conversion_success'] = True
+                    success_count += 1
+                else:
+                    # Keep original if still fails
+                    data_list[idx]['Doctor'] = updated['original_doctor'] if updated['original_doctor'] else None
+                    data_list[idx]['_original_doctor'] = updated['original_doctor']
+                    data_list[idx]['_conversion_success'] = False
+                
+                pbar.update(1)
+                pbar.set_postfix({'success': f'{success_count}/{pbar.n}'})
     
     # Create new dataset
     new_ds = Dataset.from_dict({
