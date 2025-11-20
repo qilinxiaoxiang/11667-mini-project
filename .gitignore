@@ -29,9 +29,11 @@ Thumbs.db
 *.pdf
 data/raw/
 data/processed/*.checkpoint/
+data/processed/hierarchical_dataset/
 data/cache/
 *.log
 .env
+data/processed/hierarchical_dataset_clean/cache*
 
 # Keep processed dataset for training
 !data/processed/hierarchical_dataset_clean/
@@ -52,3 +54,4 @@ checkpoints/
 .ipynb_checkpoints/
 *.ipynb
 
+outputs/*

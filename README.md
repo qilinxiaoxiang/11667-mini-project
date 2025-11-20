@@ -34,6 +34,9 @@ conda activate 11667
 ```bash
 # Install dependencies
 pip install -r requirements.txt
+
+# For Modal fine-tuning:
+pip install modal
 ```
 
 ### Environment Setup
@@ -174,7 +177,117 @@ python scripts/convert_dataset.py
 - Fine-tune on hierarchical dataset from `data/processed/hierarchical_dataset/`
 - Evaluate structure quality and medical accuracy
 
-### 3. Evaluation
+### 3. Model Fine-tuning on Modal
+
+**Important correction based on actual reference data**: Memory scales as `batch_size × seq_len²`, not model size. Using your 120MB model reference (batch=50, seq=1024 → 70GB), corrected batch sizes below.
+
+#### Setup (One-time)
+
+```bash
+pip install modal
+modal token new  # Authenticate
+
+# Create volumes
+modal volume create medical-dataset-volume
+modal volume create medical-models-volume
+
+# Upload dataset
+modal volume put medical-dataset-volume \
+  data/processed/hierarchical_dataset_clean /hierarchical_dataset_clean
+```
+
+#### Recommended Training Plans
+
+**Plan A: Safest ⭐ (RECOMMENDED)**
+```
+Model: Qwen2.5-0.5B (Full Fine-tuning)
+batch_size=16, context_length=512, epochs=3
+Total iterations: 558 (2,980 samples / 16 batch × 3)
+GPU: A100 (80GB)
+Time: 15-20 minutes
+Cost: $0.71
+Peak memory: 4-6 GB
+Command: modal run --detach modal_qwen_finetune_full.py::train
+```
+
+**Plan B: Maximum Quality**
+```
+Model: DeepSeek-R1 1.5B (Full + Gradient Checkpointing)
+batch_size=4, context_length=512, epochs=3
+Total iterations: 2,235
+GPU: A100 (80GB)
+Time: 45-60 minutes
+Cost: $1.50
+Peak memory: 8-10 GB
+Command: modal run --detach modal_deepseek_finetune_full.py::train
+```
+
+**Plan C: Budget**
+```
+Model: Qwen2.5-0.5B (LoRA)
+batch_size=32, context_length=512, epochs=3
+Total iterations: 280
+GPU: A10G (24GB)
+Time: 8-10 minutes
+Cost: $0.06
+Peak memory: 2-3 GB
+Command: modal run --detach modal_qwen_finetune_lora.py::train
+```
+
+#### Correct Modal Commands
+
+```bash
+cd scripts
+
+# Qwen full fine-tuning (safest)
+modal run --detach modal_qwen_finetune_full.py::train
+
+# OR: DeepSeek full fine-tuning (best quality)
+modal run --detach modal_deepseek_finetune_full.py::train
+
+# OR: Qwen LoRA (fastest/cheapest)
+modal run --detach modal_qwen_finetune_lora.py::train
+
+# Monitor progress
+modal apps list           # Get APP_ID
+modal logs APP_ID         # View logs
+
+# Download results
+modal volume ls medical-models-volume
+modal volume get medical-models-volume qwen_full_TIMESTAMP/final ./outputs/
+```
+
+#### Memory Reality (Corrected)
+
+**Why these batch sizes?**
+
+Your 120MB model: batch=50, seq=1024 → 70GB peak memory
+
+This comes from **attention matrices** (Q @ K^T): `batch × heads × seq_len²`
+- Not model size! Model weights are only ~500MB
+- Quadratic scaling: reducing seq_len by 2x saves 75% activation memory
+- Using seq=512 instead of 1024 brings memory down 10x
+
+**Qwen2.5-0.5B (500M params):**
+- batch=16, seq=512 → ~4-6GB ✓
+- batch=32, seq=512 → ~8-10GB ✓
+- batch=8, seq=1024 → ~8-12GB (risky)
+
+**DeepSeek-R1 1.5B (1.5B params):**
+- batch=4, seq=512 → ~6-8GB ✓ (gradient checkpointing helps)
+- batch=8, seq=512 → ~8-12GB ✓
+- batch=4, seq=1024 + checkpointing → ~25-30GB ⚠️ (tight)
+
+#### Expected Results
+
+Based on your 120MB model (20,000 iters → 0.02 loss):
+
+**Our Qwen setup (558 iterations):**
+- Should reach **0.08-0.15 loss** (hierarchical generation is harder)
+- Training should plateau after epoch 2
+- Structure quality improves non-linearly with loss
+
+### 4. Evaluation
 (To be implemented)
 - Structure compliance metrics
 - Medical accuracy assessment
