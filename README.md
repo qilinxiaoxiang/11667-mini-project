@@ -287,7 +287,68 @@ Based on your 120MB model (20,000 iters → 0.02 loss):
 - Training should plateau after epoch 2
 - Structure quality improves non-linearly with loss
 
-### 4. Evaluation
+### 4. Model Inference & Testing
+
+Test fine-tuned models locally with automatic comparison to base models.
+
+#### Quick Test
+
+```bash
+# Test Qwen full fine-tuned model
+python scripts/test_inference.py qwen full
+
+# Test Qwen LoRA
+python scripts/test_inference.py qwen lora
+
+# Test DeepSeek full
+python scripts/test_inference.py deepseek full
+
+# Test DeepSeek LoRA
+python scripts/test_inference.py deepseek lora
+
+# With custom token limit
+python scripts/test_inference.py qwen full --max-tokens 1024
+```
+
+#### Features
+
+- **Automatic Path Inference**: Models automatically loaded from `outputs/{model}_{type}_final/`
+- **Device Detection**: Auto-detects CUDA, MPS (M1), or CPU
+- **Always Compares**: Automatically loads and compares with base model
+- **LoRA Verification**: For LoRA models, verifies weights are actually trained (non-zero)
+- **Structure Analysis**: Checks if fine-tuned model adds hierarchical bullets (evidence of training effectiveness)
+
+#### Expected Output
+
+For each test, you'll see:
+
+1. **Model Loading**: Confirms fine-tuned model loaded successfully
+2. **LoRA Verification** (if applicable): Shows LoRA layer statistics
+3. **Fine-tuned Response**: Generation from your trained model
+4. **Base Model Response**: Generation from untuned base model
+5. **Comparison Analysis**:
+   - Identifies if outputs differ
+   - Checks for hierarchical structure (bullets)
+   - Provides evidence of fine-tuning effectiveness
+
+#### Directory Structure
+
+Ensure your fine-tuned models are saved in:
+
+```
+outputs/
+├── qwen_full_final/      # For: python test_inference.py qwen full
+├── qwen_lora_final/      # For: python test_inference.py qwen lora
+├── deepseek_full_final/  # For: python test_inference.py deepseek full
+└── deepseek_lora_final/  # For: python test_inference.py deepseek lora
+```
+
+Each directory should contain:
+- `config.json` / `model.safetensors` or `.bin` (model weights)
+- `tokenizer.model` (tokenizer)
+- `adapter_config.json` (for LoRA only)
+
+### 5. Evaluation
 (To be implemented)
 - Structure compliance metrics
 - Medical accuracy assessment
