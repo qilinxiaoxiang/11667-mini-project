@@ -1,0 +1,10 @@
+{
+  "model": "Qwen/Qwen3-1.7B-Base",
+  "total_samples": 10,
+  "successful": 0,
+  "failed": 10,
+  "success_rate": 0.0,
+  "average_generation_time": 3.0350680589675902,
+  "results_file": "/Users/xinshiwang/Documents/CMU Courses/11667/mini-project/11667-mini-project/evaluation/icl_results/icl_results_20251123_003236.json",
+  "timestamp": "20251123_003236"
+}

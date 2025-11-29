@@ -1,0 +1,12 @@
+{
+  "model": "microsoft/phi-2",
+  "template_type": "instruct",
+  "total_samples": 332,
+  "successful": 332,
+  "failed": 0,
+  "success_rate": 100.0,
+  "average_generation_time": 10.05649914152651,
+  "results_file": "/results/icl_eval_test_phi2_instruct_20251125_184853/icl_results_20251125_184853.json",
+  "timestamp": "20251125_184853",
+  "device": "cuda"
+}

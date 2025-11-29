@@ -1,0 +1,11 @@
+{
+  "model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "total_samples": 100,
+  "successful": 100,
+  "failed": 0,
+  "success_rate": 100.0,
+  "average_generation_time": 5.629237704277038,
+  "results_file": "/results/icl_eval_train_20251124_181348/icl_results_20251124_181348.json",
+  "timestamp": "20251124_181348",
+  "device": "cuda"
+}

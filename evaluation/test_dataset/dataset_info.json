@@ -1,0 +1,32 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "Description": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Doctor": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Patient": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Status": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "_original_doctor": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "_conversion_success": {
+      "dtype": "bool",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": ""
+}
