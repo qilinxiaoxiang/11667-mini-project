@@ -55,3 +55,4 @@ checkpoints/
 *.ipynb
 
 outputs/qwen*
+outputs/deepseek*

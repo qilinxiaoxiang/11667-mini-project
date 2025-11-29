@@ -349,10 +349,64 @@ Each directory should contain:
 - `adapter_config.json` (for LoRA only)
 
 ### 5. Evaluation
-(To be implemented)
-- Structure compliance metrics
-- Medical accuracy assessment
-- Human evaluation of response quality
+
+Comprehensive evaluation of all 4 fine-tuned models on a high-quality evaluation dataset.
+
+#### Evaluation Dataset Generation (Two-Step Process)
+
+**Step 1: Generate Plain Responses**
+```bash
+python scripts/generate_evaluation_dataset.py --num-samples 40
+```
+- Generates 40 new medical Q&A scenarios using few-shot prompting
+- Uses real training examples as templates for style consistency
+- Features: 20 concurrent workers, rate-limited API calls, full logging
+- Output: `data/processed/evaluation_dataset_synthetic/`
+
+**Step 2: Convert to Hierarchical Format**
+```bash
+python scripts/convert_evaluation_dataset.py
+```
+- Converts plain responses to hierarchical structure
+- Uses proven conversion logic (99.73% success rate from training)
+- Output: `data/processed/evaluation_dataset_hierarchical/`
+
+#### Model Evaluation
+
+Evaluate all 4 fine-tuned models on the evaluation dataset:
+
+```bash
+# Full evaluation (40 samples per model, ~15-30 minutes)
+python scripts/evaluate_models_on_dataset.py
+
+# Quick test (5 samples per model, ~2-3 minutes)
+python scripts/evaluate_models_on_dataset.py --max-samples 5
+
+# Specific models only
+python scripts/evaluate_models_on_dataset.py --models qwen_full qwen_lora
+```
+
+**Metrics Computed**:
+- **Text Similarity**: String Similarity, ROUGE-L, BLEU
+- **Structural Quality**: MECE Score, Depth Score, Constraint Score, Grouping Score
+- **Performance**: Success Rate, Generation Time, Response Length
+- **Breakdown**: By severity level (low/medium/high)
+
+**Output**:
+- `evaluation_results/model_evaluation_YYYYMMDD_HHMMSS.json`
+- Contains detailed metrics for all samples and summary statistics per model
+
+#### Evaluation Documentation
+
+For detailed evaluation methodology, metrics interpretation, and troubleshooting, see:
+📖 **[README_EVALUATION.md](README_EVALUATION.md)**
+
+This comprehensive guide includes:
+- Dataset generation process with quality assurance
+- Detailed explanation of all evaluation metrics
+- How to run evaluations and interpret results
+- Troubleshooting common issues
+- Comparative analysis of model performance
 
 ## 💻 Hardware Requirements & Training Feasibility
 

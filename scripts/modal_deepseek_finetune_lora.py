@@ -3,9 +3,9 @@ LoRA Fine-tuning script for DeepSeek-R1 1.5B on Modal
 - Model: deepseek-ai/deepseek-r1-distill-qwen-1.5b
 - Dataset: Hierarchical medical responses (3,311 samples, up to 768 tokens)
 - GPU: A100-80GB required (seq_len² scaling: 768 tokens uses more memory)
-- Batch Size: 24 with gradient accumulation (effective batch: 48)
-- Training Time: ~15-18 minutes per epoch
-- Memory Usage: ~55-60 GB (full GPU utilization)
+- Batch Size: 12 with gradient accumulation (effective batch: 24)
+- Training Time: ~20-25 minutes per epoch
+- Memory Usage: ~50-55 GB
 """
 
 import os
@@ -145,7 +145,7 @@ def preprocess_function(examples, tokenizer, max_length=768):
 
 def finetune_deepseek_lora(
     epochs=5,
-    batch_size=24,
+    batch_size=12,
     gradient_accumulation_steps=2,
     learning_rate=5e-5,
     warmup_steps=100,
@@ -157,12 +157,18 @@ def finetune_deepseek_lora(
     """
     LoRA Fine-tune DeepSeek-R1 1.5B on hierarchical medical dataset
 
-    Memory Estimation (with batch_size=24, seq_length=768):
-    - Base model weights (frozen, FP16): 2.79 GB
-    - LoRA parameters (trainable): ~0.08 GB (r=8, ranks on attention layers)
-    - Optimizer states (AdamW): ~0.4 GB
-    - Activations (attention: 24 × 24 heads × 768²): ~5-6 GB (quadratic with seq_len)
-    - Total: ~55-60 GB (full GPU utilization on A100-80GB)
+    Memory Analysis (FP32, seq_length=768):
+    - batch_size=24: exceeded 80GB (OOM)
+    - batch_size=18: ~75GB at peak (OOM on 79.25GB total GPU)
+    - batch_size=12: ~50-55GB (safe, leaves ~25GB headroom)
+
+    Memory Breakdown (with batch_size=12):
+    - Model weights (FP32): ~6 GB
+    - LoRA parameters: ~0.08 GB
+    - Optimizer states (AdamW): ~12 GB
+    - Activations & gradients (forward/backward): ~32-37 GB
+      * Attention matrices and intermediate layer outputs during forward/backward pass
+    - Total: ~50-55 GB
 
     LoRA Configuration:
     - r=8: Rank of LoRA matrices (balance between efficiency and expressiveness)
@@ -357,7 +363,7 @@ def finetune_deepseek_lora(
 )
 def train(
     epochs=5,
-    batch_size=24,
+    batch_size=12,
     gradient_accumulation_steps=2,
     learning_rate=5e-5,
     warmup_steps=100,

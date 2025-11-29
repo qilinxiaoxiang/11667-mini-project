@@ -54,18 +54,33 @@ def load_model_and_tokenizer(model_path, training_type):
 
     if training_type == "lora":
         # Load LoRA adapter
-        model = AutoPeftModelForCausalLM.from_pretrained(
-            model_path,
-            dtype=dtype,
-            device_map="auto",
-        )
+        # For MPS device, avoid device_map="auto" which can cause loading issues
+        if device == "mps":
+            model = AutoPeftModelForCausalLM.from_pretrained(
+                model_path,
+                dtype=dtype,
+            )
+            model = model.to(device)
+        else:
+            model = AutoPeftModelForCausalLM.from_pretrained(
+                model_path,
+                dtype=dtype,
+                device_map="auto",
+            )
     else:  # full
         # Load full fine-tuned model
-        model = AutoModelForCausalLM.from_pretrained(
-            model_path,
-            dtype=dtype,
-            device_map="auto",
-        )
+        if device == "mps":
+            model = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                dtype=dtype,
+            )
+            model = model.to(device)
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                dtype=dtype,
+                device_map="auto",
+            )
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     return model, tokenizer, device, dtype
@@ -232,11 +247,24 @@ Doctor Response:"""
     print(f"Base model: {base_model_id}")
 
     try:
-        base_model = AutoModelForCausalLM.from_pretrained(
-            base_model_id,
-            dtype=dtype,
-            device_map="auto",
-        )
+        # Load base model with appropriate device handling
+        if device == "mps":
+            base_model = AutoModelForCausalLM.from_pretrained(
+                base_model_id,
+                dtype=dtype,
+            )
+            base_model = base_model.to(device)
+        elif device == "cpu":
+            base_model = AutoModelForCausalLM.from_pretrained(
+                base_model_id,
+                dtype=dtype,
+            )
+        else:  # cuda
+            base_model = AutoModelForCausalLM.from_pretrained(
+                base_model_id,
+                dtype=dtype,
+                device_map="auto",
+            )
         print("✓ Base model loaded successfully")
 
         base_response = generate_response(base_model, tokenizer, device, test_prompt, args.max_tokens)

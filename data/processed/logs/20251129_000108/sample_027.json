@@ -1,0 +1,15 @@
+{
+  "index": 27,
+  "timestamp": "2025-11-29T00:01:13.622753",
+  "few_shot_count": 3,
+  "few_shot_indices": [
+    1182,
+    1183,
+    1436
+  ],
+  "prompt": "You are a medical consultation expert.\nYour task is to create NEW medical consultation Q&A pairs that follow the same format and style as the examples below.\n\nINSTRUCTIONS:\n1. Generate COMPLETELY NEW scenarios (not copies of examples)\n2. Match the format, style, and quality exactly as shown in the examples\n3. Provide clear, detailed doctor responses\n4. Cover different medical topics if possible\n\nEXAMPLES (study the format carefully):\n\n================================================================================\nExample 1:\n================================================================================\nDESCRIPTION: please give a second opinion regarding my knee surgery\n\nPATIENT: hi doctor I am a 31 year old female when I met with an accident before six years my left leg below knee got injured and the doctors has done wrong surgery please help me\n\nDOCTOR: hello revert back with reports and more detailed history to an orthopaedician and traumatologist online\n\nSTATUS: medium severity\n\n================================================================================\nExample 2:\n================================================================================\nDESCRIPTION: I cannot hear after using tip why\n\nPATIENT: hi doctor I cleaned my ear with a tip and now I cannot hear please help\n\nDOCTOR: hello for further information consult an audiologist online\n\nSTATUS: medium severity\n\n================================================================================\nExample 3:\n================================================================================\nDESCRIPTION: how to clear kidney stones\n\nPATIENT: hi doctor I have a kidney stone in my right kidney and I have abdominal pain is there any medicine to clear out the stone or is the operation the only way please help me\n\nDOCTOR: hi revert back with full detail and test report to a urologist online\n\nSTATUS: high severity\n\n================================================================================\nNOW: Generate a NEW unique medical consultation scenario following the EXACT same format above:\n\nDESCRIPTION: [brief medical question]\nPATIENT: [detailed patient narrative]\nDOCTOR: [clear, detailed medical advice - write naturally, don't worry about formatting]\nSTATUS: [low severity / medium severity / high severity]\n\nGenerate ONLY the new scenario, no meta-commentary.",
+  "api_response": null,
+  "parsed_scenario": null,
+  "success": false,
+  "error": "Error code: 401 - {'error': {'message': 'Authentication Fails, Your api key: ****209f is invalid', 'type': 'authentication_error', 'param': None, 'code': 'invalid_request_error'}}"
+}

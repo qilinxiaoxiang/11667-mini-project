@@ -1,0 +1,249 @@
+{
+  "timestamp": "2025-11-28T23:58:05.506912",
+  "total_samples": 40,
+  "successful": 40,
+  "failed": 0,
+  "success_rate": 100.0,
+  "samples": [
+    {
+      "idx": 0,
+      "description": "my 3 year old has had fever and rash for 4 days should I be concerned",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 1,
+      "description": "persistent lower back pain with leg numbness after lifting heavy objects",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 2,
+      "description": "can constant throat clearing be a sign of serious condition",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 3,
+      "description": "can persistent dizziness after covid be serious",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 4,
+      "description": "I have persistent dizziness when standing up suddenly",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 5,
+      "description": "my toddler has red spots on hands and feet after fever should I worry",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 6,
+      "description": "my 4 year old daughter has been having loose stools with mucus for 3 days and refuses to eat",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 7,
+      "description": "persistent dry cough for three weeks with chest tightness",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 8,
+      "description": "can high blood pressure cause vision problems",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 9,
+      "description": "persistent dizziness after standing up quickly",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 10,
+      "description": "persistent dizziness when standing up quickly",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 11,
+      "description": "what causes frequent headaches and how to prevent them",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 12,
+      "description": "what causes frequent dizziness when standing up suddenly in a 16 year old",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 13,
+      "description": "persistent dizziness after starting new blood pressure medication",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 14,
+      "description": "persistent lower back pain with leg numbness after gardening",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 15,
+      "description": "what are the long term effects of untreated sleep apnea",
+      "success": true,
+      "status": "high severity"
+    },
+    {
+      "idx": 16,
+      "description": "what causes persistent dizziness when standing up",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 17,
+      "description": "persistent lower back pain after lifting heavy objects at work",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 18,
+      "description": "what causes persistent dizziness when standing up",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 19,
+      "description": "my toddler has persistent fever and rash after mmr vaccination",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 20,
+      "description": "persistent dizziness after starting new blood pressure medication",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 21,
+      "description": "persistent stomach pain after meals with bloating and gas",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 22,
+      "description": "how to manage chronic lower back pain that radiates to legs",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 23,
+      "description": "I have persistent lower back pain that radiates to my right leg after a gym workout",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 24,
+      "description": "my 3 year old daughter has been having recurrent high fevers every 3-4 weeks for past 6 months",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 25,
+      "description": "can anxiety cause physical chest pain and shortness of breath",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 26,
+      "description": "My hands shake constantly and I'm worried it might be Parkinson's",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 27,
+      "description": "persistent throat pain and white patches after tonsillectomy",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 28,
+      "description": "what causes persistent dizziness when standing up",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 29,
+      "description": "my child has persistent cough and breathing difficulty what should I do",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 30,
+      "description": "why do I get dizzy when standing up quickly",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 31,
+      "description": "sudden chest pain when breathing deeply",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 32,
+      "description": "my toddler has persistent fever and rash that doesn't fade when pressed",
+      "success": true,
+      "status": "high severity"
+    },
+    {
+      "idx": 33,
+      "description": "my 3 year old has persistent cough for 2 weeks with wheezing sound",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 34,
+      "description": "persistent cough after respiratory infection",
+      "success": true,
+      "status": "low severity"
+    },
+    {
+      "idx": 35,
+      "description": "persistent dizziness and balance issues after mild head injury",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 36,
+      "description": "my 4 year old daughter has persistent cough and wheezing for 3 weeks",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 37,
+      "description": "why does my stomach hurt after eating certain foods",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 38,
+      "description": "my toddler has red spots on face and body with mild fever",
+      "success": true,
+      "status": "medium severity"
+    },
+    {
+      "idx": 39,
+      "description": "I've been experiencing persistent dizziness and heart palpitations for weeks",
+      "success": true,
+      "status": "medium severity"
+    }
+  ]
+}
