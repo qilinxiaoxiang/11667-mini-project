@@ -56,3 +56,5 @@ checkpoints/
 
 outputs/qwen*
 outputs/deepseek*
+main.aux
+main.out
