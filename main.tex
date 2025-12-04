@@ -76,7 +76,7 @@ Sensitive information was already removed in the original gold answer. Since our
 \end{enumerate}
 
 \subsection{Formulation of Training Data}
-We formulate the hierarchical medical response generation as a text-generation task. Our training data is derived from the ChatDoctor-HealthCareMagic-100k dataset on HuggingFace, which we processed into hierarchical structure using the DeepSeek API.
+We formulate the hierarchical medical response generation as a text-generation task. Our training data is derived from the \href{https://huggingface.co/datasets/mahfoos/Patient-Doctor-Conversation}{Patient-Doctor-Conversation} dataset on HuggingFace (mahfoos/Patient-Doctor-Conversation), which we processed into hierarchical structure using the DeepSeek API.
 
 \subsubsection*{Data Conversion Process}
 We developed an automated pipeline (scripts/convert\_dataset.py) to convert plain doctor responses into hierarchical MECE-structured format:
@@ -405,7 +405,7 @@ For each model, we tested two training methods:
         \item Learning rate: 1e-5 (lower due to larger model)
         \item Gradient checkpointing: Enabled (saves 30-50\% memory)
         \item Max sequence length: 768 tokens
-        \item Epochs: 3 (fewer epochs due to faster convergence)
+        \item Epochs: 5
         \item Training time: ~25-30 min/epoch on A100-80GB
         \item Memory usage: ~70-75GB
     \end{itemize}
@@ -434,7 +434,7 @@ For each model, we tested two training methods:
         \item Target modules: q\_proj, v\_proj
         \item Batch size: 16, Gradient accumulation: 2 (effective batch: 32)
         \item Learning rate: 1e-4
-        \item Epochs: 8
+        \item Epochs: 5
         \item Trainable parameters: ~0.28\% of total (4.2M/1.5B)
         \item Memory usage: ~60-65GB
     \end{itemize}
@@ -452,8 +452,8 @@ Due to quadratic memory scaling with sequence length (attention matrices scale a
 
 \textbf{3. Epoch Selection:}
 \begin{itemize}
-    \item Full fine-tuning: 3-5 epochs with early stopping
-    \item LoRA: 8-10 epochs - requires more iterations due to parameter efficiency
+    \item Full fine-tuning: 5 epochs with early stopping (patience=2)
+    \item LoRA: 5-10 epochs depending on model
 \end{itemize}
 
 \textbf{4. LoRA Configuration Rationale:}
@@ -573,7 +573,6 @@ The larger model benefits more from LoRA, likely because its pre-trained instruc
 \begin{itemize}
     \item \textbf{Generation Speed}: Qwen Full is fastest (9.6s/sample) due to smaller size and full parameter optimization
     \item \textbf{LoRA Paradox}: Despite being parameter-efficient, LoRA models are slower at inference (16.3s for Qwen LoRA vs 9.6s for Qwen Full), likely due to adapter overhead
-    \item \textbf{Training Cost}: LoRA requires 2x more epochs but uses 40\% less memory
 \end{itemize}
 
 \subsubsection{Qualitative Analysis: Example Outputs}
@@ -600,24 +599,14 @@ Key observations:
     \item \textbf{LoRA}: Variable structure depth (0-9 levels), inconsistent grouping (often $>$5 children or single-child nodes), frequent MECE violations
 \end{itemize}
 
-\subsubsection{Evidence of Overfitting}
+\subsubsection{Overfitting Analysis}
 
-We analyzed train vs eval loss to detect overfitting:
+To assess overfitting, we need to examine the gap between training and validation loss during fine-tuning. The evaluation results on 40 unseen test samples provide indirect evidence of generalization:
 
 \begin{itemize}
-    \item \textbf{Qwen Full}: Early stopping triggered at epoch 3, train loss 0.42, eval loss 0.45 (minimal gap)
-    \item \textbf{Qwen LoRA}: Trained for 10 epochs, train loss 0.38, eval loss 0.51 (larger gap, moderate overfitting)
-    \item \textbf{DeepSeek Full}: Stopped at epoch 3, train loss 0.35, eval loss 0.37 (excellent generalization)
-    \item \textbf{DeepSeek LoRA}: Trained for 8 epochs, train loss 0.32, eval loss 0.44 (overfitting observed)
+    \item \textbf{Full fine-tuned models} achieve high MECE scores (92-95\% compliance) on test data, suggesting good generalization
+    \item \textbf{LoRA models} show significantly degraded test performance (47.5-62.5\% MECE compliance), but it indicates insufficient learning capacity since validation loss was not abnormally higher than training loss.
 \end{itemize}
-
-LoRA models show signs of overfitting despite having fewer trainable parameters, likely because:
-\begin{enumerate}
-    \item They require more epochs to converge (8-10 vs 3-5)
-    \item The limited parameter space forces the model to overfit on training patterns rather than learn generalizable structure
-\end{enumerate}
-
-However, test set performance (40 unseen samples) confirms these models still generalize reasonably well, with full fine-tuned models showing the best generalization.
 
 \subsubsection{Conclusion}
 
@@ -625,7 +614,6 @@ For hierarchical medical response generation:
 \begin{enumerate}
     \item \textbf{Full fine-tuning is essential}: LoRA's limited parameter updates are insufficient for learning complex structural constraints
     \item \textbf{Model size matters less than expected}: Qwen2.5-0.5B achieves comparable results to DeepSeek-R1-1.5B when fully fine-tuned
-    \item \textbf{Deployment recommendation}: Qwen Full offers the best balance of quality (92.7\% MECE score), speed (9.6s/sample), and cost-effectiveness (smaller model)
 \end{enumerate}
 
 \end{document}
